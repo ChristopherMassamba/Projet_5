@@ -69,7 +69,7 @@ else {
           //Prix total du panier
           totalPrice = 0
           for (let i = 0; i < produitQuantité.length; i++) {
-          totalPrice = product.quantity * product.price;
+          totalPrice = produitQuantité[i].valueAsNumber * product.price;
           console.log(totalPrice)
           }
           globalPrice += totalPrice
@@ -83,7 +83,7 @@ else {
         // Modifier la quantité d'un produit
 
         function modifQuantity() {
-          const modifQuantity = document.querySelectorAll('.itemQuantity');
+          const modifQuantity = document.getElementsByClassName('itemQuantity');
         
           for (let k = 0; k < modifQuantity.length; k++) {
             modifQuantity[k].addEventListener('change', function (event) {
@@ -96,8 +96,7 @@ else {
                 location.reload();
               } else {
                 localStorage.setItem('panier', JSON.stringify(addProduct));
-                globalPrice += 0;
-                console.log(globalPrice);
+                modifQuantity.innerHTML += `<input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${event.target.value}">`;
                 productTotal();
               }
             });
@@ -106,39 +105,25 @@ else {
         modifQuantity();
 
         //Suppression d'un article du panier
-function deleteProduct() {
-  const deleteItem = document.querySelectorAll('.deleteItem');
-  for (let l = 0; l < deleteItem.length; l++) {
-    deleteItem[l].addEventListener('click', (el) => {
-      el.preventDefault();
-      console.log(l);
-      //demande de confirmation de la suppression de l'article
-      if (
-        window.confirm(
-          `Êtes- vous sur de vouloir supprimer cet article ?`
-        )
-      ) {
 
-        let idDeleteItem = product.id;
-        let colorDeleteItem = product.color;        
-
-        addProduct = addProduct.filter(
-          (element) =>
-            element.id !== idDeleteItem || element.color !== colorDeleteItem
-        );
-        localStorage.removeItem('panier', JSON.stringify(addProduct));
-        localStorage.removeItem(addProduct[l]);
-
-        location.reload();
-      }
-    });
-  }
-}      
-deleteProduct();
-
-
-      })
-  });
+        function deleteProduct() {
+          const deleteBtn = document.getElementsByClassName("deleteItem");
+          
+          for (let l = 0; l < deleteBtn.length; l++) {
+            const del = deleteBtn[l];
+            del.addEventListener('click', () =>{
+              addProduct.splice(l, 1);
+              localStorage.setItem("panier", JSON.stringify(addProduct));
+              alert('Le produit a bien été supprimé du panier');
+              location.reload();
+            })
+        }}
+        
+        deleteProduct();
+        
+        
+              })
+          });
 
 
 //////////////////////////////// Formulaire ////////////////////////////////
@@ -225,7 +210,7 @@ function confirmation() {
       //Création d'un tableau pour recuperer les ID des produits
       let productId = [];
       for (let m = 0; m < addProduct.length; m++) {
-        productId.push(document.getElementById('product.id'));
+        productId.push(document.getElementsById('product.id'));
       }
 
       //Création de l'objet contact avec les infos du formulaire + tableau productId inséré
@@ -240,6 +225,29 @@ function confirmation() {
         produits: productId,
       };
       console.log(buyOrder);
+
+      // Option de la methode post fetch
+      const postOptions = {
+        method: 'POST',
+        body: JSON.stringify(buyOrder),
+        headers: {
+          Accept: 'application/json',
+          'Content-type': 'application/json',
+        },
+      };
+      // Appel de l'API pour post les informations
+      fetch('http://localhost:3000/api/products/order', postOptions)
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        const orderId = data.orderId;
+        //envoie vers la page de de confirmation
+        window.location.href = 'confirmation.html' + '?orderId=' + orderId;
+      })
+      .catch((error) => {
+        alert(error);
+      });
     }
   })
 }
