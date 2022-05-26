@@ -1,12 +1,13 @@
-// recuperation du lien et de l'orderId
-let queryString = window.location.search;
-let urlParams = new URLSearchParams(queryString);
-let orderId = urlParams.get('orderId');
-
-//insertion de l'orderId dans l'HTML
-let orderNumber = document.querySelector('#orderId');
-orderNumber.innerHTML = orderId + ' <br> Merci de votre commande !';
-
-//suppression du localStorage
-let removeStorage = window.localStorage;
-removeStorage.clear();
+//On crée une variable qui contient l'id "orderId"
+    let orderId = document.getElementById("orderId");
+    //On vide l'interieur de l'id car elle contient un numero d'exemple
+    orderId.innerText=""
+    function showIdOrder (){
+    //On utilise URL Search Params l'url apres le ?;
+    var urlParams = new URLSearchParams(location.search);
+    // On utilise la variable avec urlParams pour selectionner orderID qui se situe apres le ?
+    let order = urlParams.get('orderId');
+    //On remplis l'interieur du span orderID avec le numéro de commande qui a été pris sur l'URL
+    orderId.innerText = order;
+   }
+   showIdOrder()

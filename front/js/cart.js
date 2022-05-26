@@ -57,22 +57,27 @@ else {
           let produitlength = produitQuantité.length
 
           quantitéTotal = 0;
+          quantitéItem = 0;
 
           for ( let i = 0; i < produitlength; i++) {
             quantitéTotal += produitQuantité[i].valueAsNumber;
+            quantitéItem = produitQuantité[i].valueAsNumber;
           }
 
           let produitQuantitéTotal = document.getElementById("totalQuantity")
           produitQuantitéTotal.innerHTML = quantitéTotal;
+          console.log(quantitéItem);
           console.log(quantitéTotal);
 
           //Prix total du panier
-          totalPrice = 0
+
+
           for (let i = 0; i < produitQuantité.length; i++) {
-          totalPrice = produitQuantité[i].valueAsNumber * product.price;
-          console.log(totalPrice)
+            totalPrice = 0;
+          totalPrice = product.price * product.quantity;
+          console.log(totalPrice);
           }
-          globalPrice += totalPrice
+          globalPrice += totalPrice;
           console.log(globalPrice);
           let produitPrixTotal = document.getElementById("totalPrice");
           produitPrixTotal.innerText = globalPrice;
@@ -83,7 +88,7 @@ else {
         // Modifier la quantité d'un produit
 
         function modifQuantity() {
-          const modifQuantity = document.getElementsByClassName('itemQuantity');
+          const modifQuantity = document.querySelectorAll('.itemQuantity');
         
           for (let k = 0; k < modifQuantity.length; k++) {
             modifQuantity[k].addEventListener('change', function (event) {
@@ -96,7 +101,8 @@ else {
                 location.reload();
               } else {
                 localStorage.setItem('panier', JSON.stringify(addProduct));
-                modifQuantity.innerHTML += `<input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${event.target.value}">`;
+                globalPrice += 0;
+                console.log(globalPrice);
                 productTotal();
               }
             });
@@ -114,7 +120,6 @@ else {
             del.addEventListener('click', () =>{
               addProduct.splice(l, 1);
               localStorage.setItem("panier", JSON.stringify(addProduct));
-              alert('Le produit a bien été supprimé du panier');
               location.reload();
             })
         }}
@@ -210,11 +215,11 @@ function confirmation() {
       //Création d'un tableau pour recuperer les ID des produits
       let productId = [];
       for (let m = 0; m < addProduct.length; m++) {
-        productId.push(document.getElementsById('product.id'));
+        productId.push(addProduct[m].idProduit);
       }
 
       //Création de l'objet contact avec les infos du formulaire + tableau productId inséré
-      let buyOrder = {
+      let order = {
         contact: {
           prenom: firstName.value,
           nom: lastName.value,
@@ -224,33 +229,34 @@ function confirmation() {
         },
         produits: productId,
       };
-      console.log(buyOrder);
+      console.log(order);
 
-      // Option de la methode post fetch
-      const postOptions = {
-        method: 'POST',
-        body: JSON.stringify(buyOrder),
-        headers: {
-          Accept: 'application/json',
-          'Content-type': 'application/json',
-        },
-      };
-      // Appel de l'API pour post les informations
-      fetch('http://localhost:3000/api/products/order', postOptions)
-      .then((res) => {
-        return res.json();
-      })
-      .then((data) => {
-        const orderId = data.orderId;
-        //envoie vers la page de de confirmation
-        window.location.href = 'confirmation.html' + '?orderId=' + orderId;
-      })
-      .catch((error) => {
-        alert(error);
-      });
-    }
-  })
+      //On créé une constante qui contient la methode Post pour l'utiliser dans l'API
+const options = {
+  method: "POST",
+  body: JSON.stringify(order),
+  headers: {
+      'Accept': 'application/json', 
+      "Content-Type": "application/json" },
+};
+//On fait l'appel a L'api pour effectuer une requete de type POST avec la constante options
+fetch(" http://localhost:3000/api/products/order", options)
+.then((res) => res.json())
+.then((data) => {
+  const orderId = data.orderId;
+  localStorage.clear();
+  //Utilisation de l'URL pour affiché l'ID du produit
+  window.location.href = 'confirmation.html'+'?orderId=' + orderId;
+})
+
+//Si une erreur est détectée
+.catch((err) => {
+  alert("Erreur survenue : " + err);
+});
+
 }
+  }
+  )}
 confirmation();
 
 }

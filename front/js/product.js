@@ -58,7 +58,7 @@ function ajoutPanier() {
      if (quantityItem <= 0) {
          alert('La quantité dois être strictement supérieur a zéro');
      }
-
+    
      //Sinon vérifier la couleur
      else {
 
@@ -68,38 +68,41 @@ function ajoutPanier() {
 
          //Sinon créer 2 variable 
 
-        else {
          
-            let panier = [];
-            if(localStorage.getItem('panier')) {
-                panier = JSON.parse(localStorage.getItem('panier'));
-            }
-            panier.push(CartProduct);
-            localStorage.setItem('panier' , JSON.stringify(panier));
+        else {
 
-            if (panier) {
-                const resultFind = panier.find(
-                    (element) => element.id === search_params._id && element.valeurColor === colorChoice);
+            // On initialise le local storage
+    let panier = JSON.parse(localStorage.getItem("panier"));
+         
+            //Importation dans le local storage
+    //Si le panier comporte déjà au moins 1 article
+    if (panier) {
+        const resultFind = panier.find(
+            (el) => el._id == search_params._id && el.colorChoice == search_params.valeurColor);
+            //Si le produit commandé est déjà dans le panier
             if (resultFind) {
-                let newQuantity = 
-                parseInt(quantityItem) + parseInt(resultFind.quantityItem);
-                resultFind.quantityItem = newQuantity;
-                localStorage.setItem("panier", JSON.stringify(saveProduct));
+                let newQuantite = parseInt(CartProduct.quantityItem) + parseInt(resultFind.quantityItem);
+                resultFind.quantityItem = newQuantite;
+                localStorage.setItem("panier", JSON.stringify(panier));
+                console.log(panier);
+            //Si le produit commandé n'est pas dans le panier
+            } else {
+                panier.push(CartProduct);
+                localStorage.setItem("panier", JSON.stringify(panier));
+                console.log(panier);
             }
-
-
-
-
-             if (confirm("Votre produit a été ajouté au panier, voulez vous continuer dans votre panier ?") == true) {
-                 window.location.href = "cart.html";
-             } else {
-                 window.location.href = "index.html";
-             }
-
-
-             localStorage.setItem('panier', JSON.stringify(saveProduct));
-
-
+        //Si le panier est vide
+        } else {
+            panier =[];
+            panier.push(CartProduct);
+            localStorage.setItem("panier", JSON.stringify(panier));
+            console.log(panier);
         }
-        }
-    }}
+        if (confirm("Votre produit a été ajouté au panier, voulez vous continuer dans votre panier ?") == true) {
+            window.location.href = "cart.html";
+        } else {
+            window.location.href = "index.html";
+        }};
+        };
+}
+    
