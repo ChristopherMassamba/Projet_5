@@ -1,38 +1,33 @@
-/* création d'une variable avec un tableau vide */
-let produitKanap = [];
+//Appel de l'API des produits
+fetch('http://localhost:3000/api/products')
+  .then((response) => response.json())
+  .then((data) => getProducts(data))
+  .catch((error) => console.error(error));
 
-/* création d'une requete fetch pour récuperer les données vers une API */
-const fetchProduit = async () => {
-    /* ajouter await pour attendre d'aller chercher la requete dans le serveur */
-    await fetch("http://localhost:3000/api/products")
-    /* création d'un .then avec comme paramètre une réponse traitée en JSON */
-        .then((res) => res.json())
-        .then((promise) => {
-            /* on stock notre tableau dans notre tableau vide */
-            produitKanap = promise;
-            console.log(produitKanap);
-        });
-};
-
-/* fonction asynchrone pour attendre fetchProduit pour pouvoir travailler avec ses réponses */
-const produitDisplay = async () => {
-    await fetchProduit();
-
-    /* getElementById pour aller chercher les éléments dans le Dom */
-    document.getElementById("items").innerHTML = produitKanap.map((product) => `
-        <div id="items${product._id}" class="cart"> 
-            <a href="./product.html?id=${product._id}">
-                <article>
-                <img src="${product.imageUrl}" alt="Image du canapé ${product.name}"/>
-                <h3 class="productName">${product.name.toUpperCase()}</h3>
-                <p class="productDescription">${product.description}</p>
-                <p>${product.price} €</p>
-                </article>
-            </a>
-        </div>
-    `)
-    /* .join pour enlever les guillemets autour des images */
-    .join("");
-};
-
-produitDisplay();
+//création des articles des produits
+function getProducts(data) {
+    for (let i = 0; i < data.length; i++) {
+      let lien = document.createElement('a');
+      document.querySelector('#items').appendChild(lien);
+      lien.href = `./product.html?id=${data[i]._id}`;
+  
+      let article = document.createElement('article');
+      lien.appendChild(article);
+  
+      let image = document.createElement('img');
+      article.appendChild(image);
+      image.src = data[i].imageUrl;
+      image.Alt = data[i].altTxt;
+  
+      let h3 = document.createElement('h3');
+      article.appendChild(h3);
+      h3.classList.add('productName');
+      h3.textContent = data[i].name;
+  
+      let p = document.createElement('p');
+      article.appendChild(p);
+      p.classList.add('productDescription');
+      p.textContent = data[i].description;
+    }
+    console.log(data);
+  }
