@@ -2,6 +2,7 @@ const cartItems = document.getElementById("cart__items");
 var productSaved = JSON.parse(localStorage.getItem('productCart'));
 //On crée la fonction qui affiche les produits , la quantité et le prix total de chaque produit
 function productCartDisplay() {
+
     //Si le localStorage est null ou vide
     if (productSaved === null || productSaved === [] || productSaved.length < 1) {
         //Alors on affiche un productCart vide
@@ -10,24 +11,6 @@ function productCartDisplay() {
     } else {
         //On vide le contenue de la section cart__items
         cartItems.innerHTML = "";
-        //On donne une valeur numerique de départ a counter
-        let counter = 0;
-        productSaved.forEach(oneProduct => {
-            //On fait une requete ajax pour appelé l'API
-            fetch(`http://localhost:3000/api/products/${oneProduct.id}`)
-                .then(function (response) {
-                    //On récupère la réponse en JSON
-                    return response.json();
-                }).then(function (data) {
-                    //On crée une variable product et lui attribut la couleur ,l'id et la quantité contenu dans le localStorage et on complete la suite grace a l'API
-                    let product = {
-                        'color': oneProduct.color,
-                        'quantity': parseInt(oneProduct.quantity),
-                        'name': data.name,
-                        'price': data.price,
-                        'imgUrl': data.imageUrl,
-                        '_id': oneProduct.id,
-                    };
 
 
                     //On remplis la section cart__items et remplis avec la variable précédemment créé
@@ -69,9 +52,15 @@ function productCartDisplay() {
                     divContentDescriptionP.textContent = product.color;
 
                     //creation du <p></p> pour le prix
-                    let divContentDescriptionPrice = document.createElement('p');
-                    divContentDescription.appendChild(divContentDescriptionPrice);
-                    divContentDescriptionPrice.textContent = product.price * product.quantity + ' €';
+                    const retrieveItemPrice = (product) =>
+                    fetch(`http://localhost:3000/api/products/${product.id}`)
+                        .then((res) => res.json())
+                        .then((data) => data.price)
+                        .catch((err) => console.log("Watch out, there is an error :", err));
+                    let itemPrice = parseInt(await retrieveItemPrice(product));
+                        const itemPriceDisplay = element.closest("div.cart__item__content")
+                        .childNodes[0].childNodes[2];
+                        itemPriceDisplay.textContent = `${itemPrice * inputQuantity} €`;
                     
 
                     //creation de la div cart__item__content__settings dans la div cart__item__content
@@ -110,26 +99,16 @@ function productCartDisplay() {
                     itemDelete.appendChild(itemDeleteP);
                     itemDeleteP.classList.add('deleteItem');
                     itemDeleteP.textContent = 'Supprimer';
-
-
-                    counter++;
-                    return counter;
-                    //On créé un autre then avec une fonction contenant le counter
-                }).then(function (counter) {
-                    //Si la variable counter (valeur numérique) est strictement  égale a la taille du tableau du localStorage
-                    if (counter == productSaved.length) {
-                        //alors on déclare ces 3 fonctions
-                        calculPrixTotal();
-                        changeQuantite();
-                        deleteProduct();
+                
                     }
-                })
-        })
-    }
-}
+                }
+        
 
 
-const calculPrixTotal = () => {
+
+
+//Création d'une fonction qui calcul le prix total du panier
+function calculPrixTotal() {
     //On attribut une valeur numérique de départ(donc 0) a total et qteTotal
     let prixTotal = 0;
     let qteTotal = 0;
@@ -146,7 +125,7 @@ const calculPrixTotal = () => {
                 try {
                     //Ici , on capture dans le dom "productPrice" on l'additionne avec productId et on le couple avec la couleur égale au prix fois 
                     //la quantite(on le transforme en chiffre) plus l'insigne euro
-                    document.getElementsByClassName('divContentDescriptionPrice' + oneProduct.id + oneProduct.color).textContent = (data.price * parseInt(oneProduct.quantity)) + " €";
+                    document.getElementsByClassName('divContentDescriptionPrice').textContent = (data.price * parseInt(oneProduct.quantity)) + " €";
                 } catch (error) { console.log(error) }
                 qteTotal += parseInt(oneProduct.quantity);
                 console.log(qteTotal);
@@ -155,13 +134,14 @@ const calculPrixTotal = () => {
                 //ici la quantité total
                 document.getElementById('totalQuantity').textContent = qteTotal;
             })
+            if (productSaved < 1) {
+                document.getElementById('totalPrice').textContent = 0;
+                document.getElementById('totalQuantity').textContent = 0;
+            }
     });
-    if (productSaved.length < 1) {
-        document.getElementById('totalPrice').textContent = 0;
-        document.getElementById('totalQuantity').textContent = 0;
-    }
 }
-//Création d'une constante pour le changement de la quantité
+
+//Création d'une fonction pour le changement de la quantité
 function changeQuantite() {
     //On selectionne la classe itemQuantity
     const quantityInputs = document.querySelectorAll('.itemQuantity');
@@ -227,6 +207,7 @@ function deleteProduct() {
                 if (product.id === idProductToDelete && product.color === colorProductToDelete) {
                     //Alors on supprime l'article désigné
                     articleToRemove.remove();
+                    localStorage.removeItem(idProductToDelete, colorProductToDelete);
                     alert("Le produit a bien été supprimé du panier")
                 } else {
                     //Autrement rien ne change 
@@ -268,10 +249,7 @@ function deleteProduct() {
 //On créé une variable qui permet de vérifier les champs et d'indiquer une erreur si les champs sont mal remplis
 function formCheck() {
 
-
-    //On séléctionne le formulaire dans le dom
-    const form = document.querySelector('.cart__order__form');
-    ////On lui attribut un event Listener avec l'attribut "change" qui appel les fonction suivante et qui active le check de chaque champs
+    ////On lui attribut un event Listener avec l'attribut "change" qui appelle les fonctions suivante et qui active le check de chaque champs
     firstName.addEventListener('change', function () {
         firstNameCheck(this)
     });
@@ -291,7 +269,7 @@ function formCheck() {
     email.addEventListener('change', function () {
         emailCheck(this)
     });
-    //Variable qui contient une fonction qui permet de verifier via le regex si le champs est bien remplis avec les bon caractéres 
+    //Fonction qui contient une boucle qui permet de verifier via le regex si le champs est bien remplis avec les bon caractéres 
     function firstNameCheck(firstName) {
         let errorFirstName = document.getElementById("firstNameErrorMsg")
         if (regexName.test(firstName.value)) {
@@ -339,7 +317,7 @@ function formCheck() {
 }
 formCheck()
 
-
+//On créer une fonction permettant la validation du formulaire pour envoyer l'utilisateur vers la page confirmation
 function formValidator(){
 
 //On crée un addEventListener au click la fonction suivante se déclenche
@@ -353,7 +331,7 @@ document.getElementById("order").addEventListener("click", (e) =>{
         !regexLastname.test(lastName.value) ||
         !regexEmail.test(email.value) ||
         !regexCity.test(city.value) ||
-        !regexAdress.test(address.value)
+        !regexAdress.test(adress.value)
       ) {
         alert('Veuillez remplir correctement tous les champs du formulaire');
       }
@@ -388,7 +366,7 @@ const options = {
   fetch("http://127.0.1:3000/api/products/order", options)
   .then((response) => response.json())
   .then((data) => {
-    console.log(data);
+    //On vide le local storage
     localStorage.clear();
     //Utilisation de l'URL pour afficher l'ID du produit
     document.location.href = "confirmation.html?orderId="+data.orderId;
@@ -400,4 +378,15 @@ const options = {
 }
 
 formValidator();
-productCartDisplay();
+
+// ======================= Affichage de la page ======================= //
+const pageBuilder = async () => {
+    /**  Recuperer les items dans le local storage **/
+    currentProduct = JSON.parse(localStorage.productCart);
+    /**  Créer 1 item à la fois dans le DOM **/
+    for (let i = 0; i < currentProduct.length; i++) {
+      const element = currentProduct[i];
+      await imageInDiv(element);
+      await createItem(element);
+    }
+  };

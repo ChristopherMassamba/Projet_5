@@ -4,7 +4,7 @@ fetch('http://localhost:3000/api/products')
   .then((data) => getProducts(data))
   .catch((error) => console.error(error));
 
-//création des articles des produits
+//création des articles avec leur caractéristiques
 function getProducts(data) {
     for (let i = 0; i < data.length; i++) {
       let lien = document.createElement('a');

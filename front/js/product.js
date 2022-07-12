@@ -1,10 +1,9 @@
 const productImg = document.querySelector('.item__img')
 var urlParams = new URLSearchParams(location.search);
 let id = urlParams.get('id');
-const url = `http://127.0.1:3000/api/products/${id}`;
-var items = []
+
 //Appel de l'api 
-fetch(url)
+fetch(`http://127.0.1:3000/api/products/${id}`)
     .then(function (response) {
 
         return response.json();
@@ -66,7 +65,7 @@ fetch(url)
                     let producToSave = [];
                     // Variablé créé pour stocker la longueur 
                     let retrievedObjectNumbers = retrievedObject.length;
-                    // Si retrievedObjectNumbers est inferieur a zero
+                    // Si retrievedObjectNumbers est supérieur a zero
                     if (retrievedObjectNumbers > 0) {
                         var updateCart = false;
                         //créé  une boucle 
