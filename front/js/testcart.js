@@ -2,7 +2,6 @@ const cartItems = document.getElementById("cart__items");
 var productSaved = JSON.parse(localStorage.getItem('productCart'));
 //On crée la fonction qui affiche les produits , la quantité et le prix total de chaque produit
 function productCartDisplay() {
-
     //Si le localStorage est null ou vide
     if (productSaved === null || productSaved === [] || productSaved.length < 1) {
         //Alors on affiche un productCart vide
@@ -14,10 +13,10 @@ function productCartDisplay() {
         //On donne une valeur numerique de départ a counter
         let counter = 0;
         productSaved.forEach(oneProduct => {
-            //On fait une requete ajax pour appelé l'API
-            fetch(`http://localhost:3000/api/products/${oneProduct.id}`)
+            let productId = oneProduct.id;
+            //On fait une promesse pour appelé l'API
+            fetch(`http://localhost:3000/api/products/${productId}`)
                 .then(function (response) {
-                    //On récupère la réponse en JSON
                     return response.json();
                 }).then(function (data) {
                     //On crée une variable product et lui attribut la couleur ,l'id et la quantité contenu dans le localStorage et on complete la suite grace a l'API
@@ -27,99 +26,36 @@ function productCartDisplay() {
                         'name': data.name,
                         'price': data.price,
                         'imgUrl': data.imageUrl,
-                        '_id': oneProduct.id,
+                        '_id': productId,
                     };
-                    console.log(product);
-
-
                     //On remplis la section cart__items et remplis avec la variable précédemment créé
-                    let article = document.createElement('article');
-                    document.querySelector('#cart__items').appendChild(article);
-                    article.classList.add('cart__item');
-                    article.dataset.id = product._id;
-                    article.dataset.color = product.color;
-
-                    //creation de la div img
-                    let divImage = document.createElement('div');
-                    article.appendChild(divImage);
-                    divImage.classList.add('cart__item__img');
-
-                    //Insertion de l'image dans la div img
-                    let imageInDiv = document.createElement('img');
-                    divImage.appendChild(imageInDiv);
-                    imageInDiv.src = product.imgUrl;
-                    imageInDiv.alt = product.imgAlt;
-
-                    //creation de la div cart__item__content
-                    let divContent = document.createElement('div');
-                    article.appendChild(divContent);
-                    divContent.classList.add('cart__item__content');
-
-                    //creation de la div cart__item__content__description dans cart__item__content
-                    let divContentDescription = document.createElement('div');
-                    divContent.appendChild(divContentDescription);
-                    divContentDescription.classList.add('cart__item__content__description');
-
-                    //creation du h2 dans cart__item__content__description
-                    let divContentDescriptionH2 = document.createElement('h2');
-                    divContentDescription.appendChild(divContentDescriptionH2);
-                    divContentDescriptionH2.textContent = product.name;
-
-                    //creation du <p></p> pour la color
-                    let divContentDescriptionP = document.createElement('p');
-                    divContentDescription.appendChild(divContentDescriptionP);
-                    divContentDescriptionP.textContent = product.color;
-
-                    //creation du <p></p> pour le prix
-                    let divContentDescriptionPrice = document.createElement('p');
-                    divContentDescription.appendChild(divContentDescriptionPrice);
-                    divContentDescriptionPrice.textContent = product.price * parseInt(product.quantity) + ' €';
-                    
-
-                    //creation de la div cart__item__content__settings dans la div cart__item__content
-                    let divContentSettings = document.createElement('div');
-                    divContent.appendChild(divContentSettings);
-                    divContentSettings.classList.add('cart__item__content__settings');
-
-                    //creation de la div class="cart__item__content__settings__quantity
-                    let divContentSettingsQuantity = document.createElement('div');
-                    divContentSettings.appendChild(divContentSettingsQuantity);
-                    divContentSettingsQuantity.classList.add(
-                        'cart__item__content__settings__quantity'
-                    );
-
-                    //creation du p dans la div cart__item__content__settings__quantity
-                    let divContentSettingsQuantityP = document.createElement('p');
-                    divContentSettingsQuantity.appendChild(divContentSettingsQuantityP);
-                    divContentSettingsQuantityP.textContent = 'Qté :';
-
-                    //création de <input>
-                    let inputQuantity = document.createElement('input');
-                    divContentSettingsQuantity.appendChild(inputQuantity);
-                    inputQuantity.setAttribute('type', 'number');
-                    inputQuantity.classList.add('itemQuantity');
-                    inputQuantity.setAttribute('name', 'itemQuantity');
-                    inputQuantity.setAttribute('min', '1');
-                    inputQuantity.setAttribute('max', '100');
-                    inputQuantity.value = product.quantity;
-
-                    //création de la div cart__item__content__settings__delete
-                    let itemDelete = document.createElement('div');
-                    divContentSettings.appendChild(itemDelete);
-                    itemDelete.classList.add('cart__item__content__settings__delete');
-
-                    let itemDeleteP = document.createElement('p');
-                    itemDelete.appendChild(itemDeleteP);
-                    itemDeleteP.classList.add('deleteItem');
-                    itemDeleteP.textContent = 'Supprimer';
-
-
+                    /////////////////MODIFIER LE INNER HTML EN CREATE ELEMENT
+                    cartItems.innerHTML += `
+                    <article class="cart__item" data-id="${product._id}" data-color="${product.color}">
+                    <div class="cart__item__img">
+                    <img src="${product.imgUrl}" alt="Photographie du canapé ${product.name}">
+                    </div>
+                    <div class="cart__item__content">
+                    <div class="cart__item__content__description">
+                        <h2>${product.name}</h2>
+                        <p>${product.color}</p>
+                        <p id='productPrice_${product._id}_${product.color}'>${product.price * parseInt(product.quantity)} €</p>
+                    </div>
+                    <div class="cart__item__content__settings">
+                        <div class="cart__item__content__settings__quantity">
+                        <p>Qté :</p>
+                        <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${product.quantity}">
+                        </div>
+                        <div class="cart__item__content__settings__delete" data-id="${product._id}" data-color="${product.color}">
+                        <p class="deleteItem">Supprimer</p>
+                        </div>
+                    </div>
+                    </div>
+                </article>`;
                     counter++;
                     return counter;
-                })
-
-                    //On créé un autre then avec une fonction contenant le counter
-                .then(function (counter) {
+                    //On créé un autre then avec une fonction
+                }).then(function (counter) {
                     //Si la variable counter (valeur numérique) est strictement  égale a la taille du tableau du localStorage
                     if (counter == productSaved.length) {
                         //alors on déclare ces 3 fonctions
@@ -132,44 +68,41 @@ function productCartDisplay() {
     }
 }
 
-
-
-//Création d'une fonction qui calcul le prix total du panier
-function calculPrixTotal() {
+const calculPrixTotal = () => {
     //On attribut une valeur numérique de départ(donc 0) a total et qteTotal
-    let prixTotal = 0;
+    let total = 0;
     let qteTotal = 0;
     //On tranforme le JSON en valeur Javascript
     productSaved = JSON.parse(localStorage.getItem('productCart'));
     productSaved.forEach(oneProduct => {
+        let productId = oneProduct.id;
         //On fait un appel a l'api avec une promesse , comme précédemment fait (avec l'ID en fin)
-        fetch(`http://localhost:3000/api/products/${oneProduct.id}`)
+        fetch(`http://localhost:3000/api/products/${productId}`)
             .then(item => item.json())
             .then(data => {
                 //On multiplie le prix et la quantité et on addtionne avec le total
-                prixTotal += data.price * parseInt(oneProduct.quantity);
-                console.log(prixTotal);
+                total += data.price * parseInt(oneProduct.quantity);
+                console.log(total);
                 try {
-                    //Ici , on capture dans le dom "productPrice" on l'additionne avec productId et on le couple avec la couleur égale au prix fois 
-                    //la quantite(on le transforme en chiffre) plus l'insigne euro
-                    document.getElementsByClassName('divContentDescriptionPrice').textContent = (data.price * parseInt(oneProduct.quantity)) + " €";
+                    //Ici , on capture dans le dom "productPrice" on l'addition avec productId(enJS) et on le couple avec la couleur égale au prix fois 
+                    //la quantite(on le transforme en chiff) plus l'insigne euro
+                    document.getElementById('productPrice_' + productId + "_" + oneProduct.color).innerHTML = (data.price * parseInt(oneProduct.quantity)) + " €";
                 } catch (error) { console.log(error) }
                 qteTotal += parseInt(oneProduct.quantity);
                 console.log(qteTotal);
                 //On insére le prix total dans le dom 
-                document.getElementById('totalPrice').textContent = prixTotal;
+                document.getElementById('totalPrice').innerHTML = total;
                 //ici la quantité total
-                document.getElementById('totalQuantity').textContent = qteTotal;
+                document.getElementById('totalQuantity').innerHTML = qteTotal;
             })
-            if (productSaved < 1) {
-                document.getElementById('totalPrice').textContent = 0;
-                document.getElementById('totalQuantity').textContent = 0;
-            }
     });
+    if (productSaved.length < 1) {
+        document.getElementById('totalPrice').innerHTML = 0;
+        document.getElementById('totalQuantity').innerHTML = 0;
+    }
 }
-
-//Création d'une fonction pour le changement de la quantité
-function changeQuantite() {
+//Création d'une constante pour le changement de la quantité
+const changeQuantite = () => {
     //On selectionne la classe itemQuantity
     const quantityInputs = document.querySelectorAll('.itemQuantity');
     //On execute la fonction qu'on vas crée pour chaque element du tableau avec forEach
@@ -213,7 +146,6 @@ function changeQuantite() {
         })
     })
 }
-
 //Fonction pour supprimer un produit du productCart
 function deleteProduct() {
     //On selectionne deleteItem dans le DOM
@@ -234,7 +166,6 @@ function deleteProduct() {
                 if (product.id === idProductToDelete && product.color === colorProductToDelete) {
                     //Alors on supprime l'article désigné
                     articleToRemove.remove();
-                    localStorage.removeItem(idProductToDelete, colorProductToDelete);
                     alert("Le produit a bien été supprimé du panier")
                 } else {
                     //Autrement rien ne change 
@@ -276,7 +207,10 @@ function deleteProduct() {
 //On créé une variable qui permet de vérifier les champs et d'indiquer une erreur si les champs sont mal remplis
 function formCheck() {
 
-    ////On lui attribut un event Listener avec l'attribut "change" qui appelle les fonctions suivante et qui active le check de chaque champs
+
+    //On séléctionne le formulaire dans le dom
+    const form = document.querySelector('.cart__order__form');
+    ////On lui attribut un event Listener avec l'attribut "change" qui appel les fonction suivante et qui active le check de chaque champs
     firstName.addEventListener('change', function () {
         firstNameCheck(this)
     });
@@ -296,7 +230,7 @@ function formCheck() {
     email.addEventListener('change', function () {
         emailCheck(this)
     });
-    //Fonction qui contient une boucle qui permet de verifier via le regex si le champs est bien remplis avec les bon caractéres 
+    //Variable qui contient une fonction qui permet de verifier via le regex si le champs est bien remplis avec les bon caractéres 
     function firstNameCheck(firstName) {
         let errorFirstName = document.getElementById("firstNameErrorMsg")
         if (regexName.test(firstName.value)) {
@@ -344,7 +278,7 @@ function formCheck() {
 }
 formCheck()
 
-//On créer une fonction permettant la validation du formulaire pour envoyer l'utilisateur vers la page confirmation
+
 function formValidator(){
 
 //On crée un addEventListener au click la fonction suivante se déclenche
@@ -393,7 +327,7 @@ const options = {
   fetch("http://127.0.1:3000/api/products/order", options)
   .then((response) => response.json())
   .then((data) => {
-    //On vide le local storage
+    console.log(data);
     localStorage.clear();
     //Utilisation de l'URL pour afficher l'ID du produit
     document.location.href = "confirmation.html?orderId="+data.orderId;
