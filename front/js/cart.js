@@ -426,7 +426,7 @@ const pageBuilder = async() => {
 };
 
 const main = async () => {
-    if(existingBasket === true) {
+    if(existingBasket() === true) {
         await pageBuilder();
         setQuantityModifiers();
         setDeleteButton();
