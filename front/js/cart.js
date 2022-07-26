@@ -134,7 +134,7 @@ const retrieveItemPrice = (item) =>
       
         /** 6 - Attach Info Wrapper to main Wrapper and insert the component **/
         wrapper.appendChild(infoWrapper);
-        item.appendChild(wrapper);
+        cartItems.appendChild(wrapper);
       };
         
       //La logique du panier
